@@ -1,0 +1,44 @@
+{
+  "date": "2026-07-18",
+  "intro": "Two ideas worth keeping from yesterday’s workbench.",
+  "lessons": [
+    {
+      "concept": "Control plane and data plane separation",
+      "summary": "Separate who decides from who does the work, then make every worker prove it still has authority.",
+      "diagram": {"type": "flow", "nodes": ["Control plane", "Lease + fence", "Data plane"]},
+      "explanation": "The control plane stores intent, ownership, policy, and status. The data plane performs the actual work. Separating them makes authority easier to audit and execution easier to scale.",
+      "example": "A print shop tracks job ownership on an order board. Printers execute assigned jobs, but cannot decide ownership themselves. A stale printer is blocked after reassignment.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "The coordination layer is a control plane; lease IDs and monotonically increasing fencing generations prevent a former owner from acting after authority moves.",
+        "name": "Control plane/data plane separation · leases and fencing tokens"
+      },
+      "slug": "control-plane-data-plane",
+      "takeaway": "Put ownership and policy in a durable control path, then make the work path prove it is acting on current authority.",
+      "title": "Keep coordination separate from the work",
+      "why_it_mattered": "Yesterday required a safe handoff between independent workers. A coordination layer let ownership move without letting the former owner keep acting.",
+      "deep_dive": "Many systems become easier to reason about when coordination and execution live on separate paths. The control plane decides what should happen: it stores intent, ownership, policy, and status. The data plane performs the actual work: moving bytes, answering requests, or changing a resource. This split lets each path optimize for a different job. Coordination benefits from strong consistency and a complete audit trail. Execution often needs speed, scale, and graceful retries. Imagine a print shop with an order board and several printers. If a printer stops halfway through, the board can reassign the job without pretending the first attempt never existed. The boundary needs both a coordination record and a rule that execution follows it."
+    },
+    {
+      "concept": "Deterministic guardrails around probabilistic models",
+      "summary": "Let the model make creative choices, but let deterministic code control what becomes real.",
+      "diagram": {"type": "flow", "nodes": ["Model draft", "Policy checks", "Publish or reject"]},
+      "explanation": "Models are useful when many answers can be reasonable. They are poor final authorities for rules that must hold every time, so code should enforce permissions and invariants.",
+      "example": "An assistant drafts two lessons. A validator checks structure, privacy, copied phrases, and repeats. A failed check creates no page and leaves the previous site intact.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "A probabilistic model proposes content inside a deterministic shell that enforces policy, validates invariants, and commits state only after every check passes.",
+        "name": "Deterministic shell around a probabilistic core · validate before commit"
+      },
+      "slug": "deterministic-guardrails",
+      "takeaway": "Use models for judgment and expression; use deterministic programs for permissions, invariants, and irreversible state changes.",
+      "title": "Let the model create, but make code decide",
+      "why_it_mattered": "Yesterday combined creative writing with strict privacy and publishing rules. The model proposed content; mechanical checks alone decided whether it could move forward.",
+      "deep_dive": "A language model is useful for tasks with many reasonable answers: choosing an angle, explaining a concept, or rewriting an example. It is a poor final authority for rules that must hold every time. A model can overlook a private identifier, misunderstand a length limit, or return a plausible structure with one missing field. Reliable agent systems therefore place a creative model inside a deterministic shell. Code gathers an allowed input window, validates the output schema, checks privacy patterns, enforces repeat rules, and controls publication. The model proposes content. Mechanical checks decide whether that content may move forward. This preserves the model’s flexibility without asking probability to behave like a guarantee."
+    }
+  ],
+  "reading_time_minutes": 2,
+  "schema_version": 1
+}
