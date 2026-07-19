@@ -1,0 +1,60 @@
+{
+  "date": "2026-07-19",
+  "intro": "Today brought two useful lessons about coordinating work and checking whether it actually finished.",
+  "lessons": [
+    {
+      "concept": "Fencing tokens for stale-worker rejection",
+      "deep_dive": "The crucial detail is where enforcement happens. If workers merely compare tokens in their own code, a buggy or disconnected worker can still write directly. The database, file service, or mutation API must store the highest accepted generation and reject lower generations atomically with the write. Tokens should increase monotonically and never be reused for the same protected resource. This differs from a lock: a lock coordinates access, while a fencing token gives downstream storage evidence that an operation belongs to the latest owner. Together, leases and fencing tokens handle pauses, network delays, retries, and process restarts more safely. Audit records can retain a bounded representation of the generation and rejection reason, making stale attempts observable without storing sensitive payloads.",
+      "diagram": {
+        "nodes": [
+          "Lease granted",
+          "Token increases",
+          "Worker writes",
+          "Store checks token"
+        ],
+        "type": "sequence"
+      },
+      "example": "Imagine two generic report workers. Worker A gets token 14, pauses, and loses its lease. Worker B gets token 15 and saves the report. When A resumes, storage rejects its token 14 update instead of overwriting newer work.",
+      "explanation": "A lease says who may work for a limited time, but expiry alone cannot stop a paused worker from waking up late. Each new lease therefore receives a larger fencing token. The shared resource accepts an operation only when its token is at least as current as the last one seen.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "A monotonically increasing generation lets the resource reject operations from an older lease holder.",
+        "name": "Fencing tokens"
+      },
+      "slug": "fencing-tokens",
+      "summary": "A fencing token lets shared storage reject writes from workers whose lease has already been replaced.",
+      "takeaway": "Time-limited ownership needs a resource-enforced generation number, not just a promise that stale workers will behave.",
+      "title": "Fencing Tokens Stop Stale Workers",
+      "why_it_mattered": "The concept arose while checking how coordinated workers can preserve task state when ownership changes or an old process returns unexpectedly."
+    },
+    {
+      "concept": "Outcome-based agent monitoring",
+      "deep_dive": "This is black-box monitoring applied to agent work. The observer cares about the contract visible to a consumer, not the worker's internal lifecycle. A useful postcondition should be specific, cheap to test, and hard to satisfy accidentally. Existence alone may be too weak, so combine checks when appropriate: freshness, schema validity, expected labels, checksum, commit time, or a lightweight request. Process signals still help diagnosis after a failure, but they should not be the primary proof of success. The monitor also needs quiet success semantics so delayed checks do not repeat completion messages. For long tasks, separate progress reporting from the final deadman check: progress can use agent state, while the deadline check verifies the artifact. This reduces false alarms and makes recovery clearer because an alert describes the missing contract rather than guessing why a worker vanished.",
+      "diagram": {
+        "nodes": [
+          "Deadline reached",
+          "Check artifact",
+          "Artifact valid",
+          "Investigate absence"
+        ],
+        "type": "decision"
+      },
+      "example": "Suppose an agent must generate a catalog by noon. The monitor validates that the catalog exists, has the expected date, and passes its schema check. It alerts only when that product is missing or invalid, regardless of whether the worker still appears active.",
+      "explanation": "An agent disappearing from a running-process list is ambiguous: it may have finished, failed, or lost its reporting channel. A better monitor checks the promised outcome directly, such as a valid file, a recorded change, or a successful endpoint response.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "The monitor tests the externally promised result rather than relying on an internal process signal.",
+        "name": "Black-box monitoring"
+      },
+      "slug": "outcome-based-agent-monitoring",
+      "summary": "Agent monitoring is more reliable when it checks the promised artifact instead of inferring success from process visibility.",
+      "takeaway": "Define completion as a mechanically testable postcondition, then make monitoring evaluate that postcondition.",
+      "title": "Monitor the Artifact, Not the Agent",
+      "why_it_mattered": "The pattern surfaced after status-only checks produced false alarms even though delegated work had already completed successfully."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
