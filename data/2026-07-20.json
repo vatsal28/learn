@@ -1,0 +1,60 @@
+{
+  "date": "2026-07-20",
+  "intro": "Two lessons today about making automated systems easier to trust: model their states precisely, and give each agent tool one narrow job.",
+  "lessons": [
+    {
+      "concept": "Explicit state machines",
+      "deep_dive": "The important design choice is not adding more labels at random. Each state should answer a question that changes system behavior: may the item be edited, does it need approval, can it be distributed, or should it be retried? Transitions should also carry evidence. Moving from drafted to approved might require a recorded decision; moving from approved to published might require a successful delivery result. This makes impossible combinations easier to reject, such as an item being both unpublished and reported as delivered. It also improves observability because dashboards can show where work is waiting instead of reducing every non-success to failure. When external data arrives late, model that separately from unavailable access. Precise states turn status reporting from guesswork into a deterministic projection of the workflow.",
+      "diagram": {
+        "nodes": [
+          "Collected",
+          "Drafted",
+          "Approved",
+          "Published"
+        ],
+        "type": "flow"
+      },
+      "example": "Imagine a document pipeline with four states: collected, drafted, approved, and published. A morning summary can then report a waiting draft without mistaking the absence of publication for a failed run.",
+      "explanation": "A status field is useful only when its values match reality. If a workflow treats drafted, approved, and published as the same condition, downstream reports will confidently say the wrong thing. An explicit state machine names each stage and defines the transitions between them.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "A finite-state machine gives each meaningful condition a named state and permits only deliberate transitions between them.",
+        "name": "Finite-state machine"
+      },
+      "slug": "explicit-state-machines",
+      "summary": "Explicit states prevent a system from turning distinct conditions into one vague and misleading status.",
+      "takeaway": "Model meaningful states first; write human-facing status text from those states second.",
+      "title": "Model the State You Actually Have",
+      "why_it_mattered": "The concept arose because several healthy workflows were described poorly when distinct operational states collapsed into broad labels."
+    },
+    {
+      "concept": "Capability-scoped agent tools",
+      "deep_dive": "Least privilege applies to agent interfaces as much as user accounts. A generic file-item tool may look convenient, but it forces the model to remember every policy branch correctly. Smaller tools move those policies into code. Their names, schemas, and preconditions become part of the safety boundary. Good scoped tools also carry provenance: the filing operation can accept only items previously reviewed in the current run, while the archival operation can require proof that a separate process completed. A mismatch then fails closed instead of being interpreted creatively. This does not eliminate planning errors; it limits their blast radius and makes them diagnosable. Logs can distinguish a bad tool choice from an authentication failure or an execution bug. For high-impact actions, the best agent tool is often intentionally boring: few parameters, explicit evidence, a small target set, and no fallback that silently broadens authority.",
+      "diagram": {
+        "nodes": [
+          "Agent request",
+          "Purpose check",
+          "Scoped action",
+          "Fail closed"
+        ],
+        "type": "decision"
+      },
+      "example": "Suppose an assistant has separate tools for filing reviewed alerts and archiving completed reports. If it sends an alert to the report tool, the mismatched proof requirements stop the action before anything moves.",
+      "explanation": "Agents are more reliable when tools encode a narrow purpose instead of exposing a broad action with many unrelated modes. A purpose-specific tool can validate the exact evidence it needs and reject requests that belong to a different workflow.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "A tool should expose only the permissions and inputs required for one well-defined operation.",
+        "name": "Principle of least privilege"
+      },
+      "slug": "capability-scoped-agent-tools",
+      "summary": "Narrowly scoped tools help agents fail safely when a request does not match the tool's intended purpose.",
+      "takeaway": "Treat tool selection as part of authorization, not merely a routing convenience.",
+      "title": "Give Every Agent Tool One Narrow Job",
+      "why_it_mattered": "The pattern surfaced when a safe guard blocked an action because the agent selected a tool built for a different operational context."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
