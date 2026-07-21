@@ -1,0 +1,60 @@
+{
+  "date": "2026-07-21",
+  "intro": "Two lessons from a day when reliable progress depended on careful recovery and honest execution signals.",
+  "lessons": [
+    {
+      "concept": "Compensating transactions",
+      "deep_dive": "Good compensation starts with durable checkpoints. Record which step completed, the version it produced, and the safe state to restore. Make compensating commands idempotent so repeating recovery does not cause fresh damage. Use locks or version checks to stop concurrent work from overwriting the rollback. Some effects cannot truly be undone, such as an email already delivered, so order irreversible steps last whenever possible. After compensation, run outcome-based checks against every affected boundary instead of trusting a command's exit code. A saga may coordinate this centrally through an orchestrator or distribute responsibility among participating services. For small systems, a clear recovery ledger and a few explicit commands are often enough. The essential property is that partial success becomes a known, resumable state rather than an improvised emergency.",
+      "diagram": {
+        "nodes": [
+          "Apply change",
+          "Detect partial failure",
+          "Compensate",
+          "Verify restored state"
+        ],
+        "type": "sequence"
+      },
+      "example": "Imagine a publishing service that promotes an article, refreshes a mirror, and archives its inputs. If the mirror step fails after promotion, the service can restore the previous article, leave the inputs untouched, and verify both readers",
+      "explanation": "A database transaction can roll back several writes inside one database. A distributed workflow cannot usually rewind every external system atomically. Instead, each completed step needs a matching compensating action that restores the intended business state. Compensation is not a blind technical reversal; it must understand what became visible, what remains",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "A saga treats each committed step as reversible through a corresponding compensating action when later steps fail.",
+        "name": "Saga pattern"
+      },
+      "slug": "compensating-transactions",
+      "summary": "When one workflow changes several systems, compensating transactions provide explicit, tested actions that restore a safe business state.",
+      "takeaway": "Design the undo path beside the happy path, and test recovery before automation reaches production.",
+      "title": "Undoing Work Across System Boundaries",
+      "why_it_mattered": "The concept arose because a multi-step release crossed several boundaries, and an unintended early action required a controlled recovery"
+    },
+    {
+      "concept": "Action receipts",
+      "deep_dive": "Action receipts turn vague agent progress into a small state machine. A request begins as pending, becomes started only when the tool returns evidence, and becomes completed only when the expected outcome passes a check. Failed or missing receipts remain explicit states rather than being smoothed over in conversation. Receipts should include the minimum useful correlation data, such as a job key, timestamp, expected artifact, and current status, while avoiding sensitive payloads. Long-running work also needs mechanical follow-up checks against the product itself, not merely the worker's heartbeat. This mirrors reliable messaging systems, where acknowledgment follows durable processing. It also improves recovery: after interruption, the next turn can inspect the receipt and decide whether to resume, retry, or report failure. The result is less theatrical progress and a much stronger boundary between reasoning, side effects, and truth.",
+      "diagram": {
+        "nodes": [
+          "Request action",
+          "Tool confirms",
+          "Record receipt",
+          "Report state"
+        ],
+        "type": "flow"
+      },
+      "example": "Suppose an assistant says it will launch a report generator. It should first receive a job identifier, store it, and only then say the job is running. If no identifier arrives, the accurate state is",
+      "explanation": "Natural-language intent is not execution. An agent may plan to start a worker, run a command, or deploy a change, yet lose the turn before the action happens. An action receipt is concrete evidence such as a returned task identifier, process handle, created artifact, or verified endpoint. User-facing status should be derived",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "Like a consumer acknowledging work only after a durable commit, an agent reports state only after a verifiable tool result.",
+        "name": "Acknowledge after commit"
+      },
+      "slug": "action-receipts",
+      "summary": "Agents should announce operational progress only after receiving concrete evidence that the underlying action actually started or completed.",
+      "takeaway": "Make narration lag execution by one verified event; never let confident language become the source of operational truth.",
+      "title": "Report Actions Only After They Exist",
+      "why_it_mattered": "The concept arose when work was described as active before the execution layer had confirmed that any worker existed."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
