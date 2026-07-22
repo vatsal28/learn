@@ -1,0 +1,70 @@
+{
+  "date": "2026-07-22",
+  "lessons": [
+    {
+      "concept": "Configuration drift appears when scheduled, manual, and recovery paths each copy the same rules. Small local fixes make those copies diverge, so identical inputs eventually produce different behavior depending on which entry point runs.",
+      "deep_dive": "Drift usually begins with sensible edits: one runner gains a retry, another receives a newer path, and a recovery route retains an older gate. The danger appears only when they stop representing one system. A stronger design separates concerns by rate of change. Put ordering, validation, retries, and completion checks in one executable contract. Keep domain policy separate when different owners change it independently. Entry points become adapters that choose timing or mode and pass bounded inputs. During consolidation, inventory obscure recovery behavior, run representative fixtures through every route, and compare final artifacts. Future behavioral changes then update the canonical contract first, turning hidden divergence into a visible review decision.",
+      "diagram": {
+        "nodes": [
+          "Thin entry points",
+          "Canonical contract",
+          "Validated artifacts"
+        ],
+        "type": "layers"
+      },
+      "example": "Imagine a batch service whose timer retries failed work, while its command-line runner skips retries and its recovery job checks an outdated output location. Each path seems valid alone.",
+      "explanation": "Configuration drift appears when scheduled, manual, and recovery paths copy the same behavior. Small local fixes make those copies diverge until identical inputs produce different outcomes through different entry points.",
+      "how": "After consolidation, test every entry point against the same fixtures and verify outputs rather than trusting successful process exits. Changes to behavior land in the authoritative contract first; wrappers only reference it. This reduces silent divergence and makes failures easier to reproduce.",
+      "how_it_works": "Put sequencing, gates, retries, and completion checks in one authoritative contract. Make entry points pass bounded inputs into it, then test representative runs by comparing their final artifacts rather than their console messages.",
+      "in_practice": "A generic batch service can use one workflow module for its timer, command-line tool, and recovery job. Policy may live separately, but behavioral changes always enter through the shared contract first.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "One authoritative workflow contract supplies the same behavior to scheduled, manual, and recovery entry points.",
+        "name": "Single source of truth"
+      },
+      "slug": "configuration-drift",
+      "summary": "Duplicate operational rules quietly diverge; one canonical contract keeps every runner aligned.",
+      "takeaway": "Centralize behavioral rules, keep entry points thin, and verify artifacts from every path.",
+      "title": "Stop Configuration Drift at the Source",
+      "what": "Configuration drift happens when several copies of the same operational rule evolve independently. A scheduled runner, manual command, and recovery path may begin equivalent, then acquire different assumptions after small fixes. The result is deceptive: each copy looks reasonable alone, yet identical inputs produce different behavior depending on the entry point.",
+      "why": "Treat the workflow definition as a shared dependency, not prose to duplicate. Give one artifact authority over sequencing, gates, and recovery. Keep launchers thin: they should select a mode, provide inputs, and invoke the contract. Product policy can remain separate when it changes for different reasons.",
+      "why_it_mattered": "Hidden divergence makes operations unpredictable. Tests often exercise only one route, successful exits stop proving that expected artifacts exist, and incident diagnosis becomes a hunt for whichever procedural copy actually ran.",
+      "why_it_matters": "The divergence stays hidden because every copy can look correct by itself. Operators lose predictability, tests cover only one path, and a successful process exit may no longer mean that the expected artifact exists."
+    },
+    {
+      "concept": "Selective classification gives an agent a third outcome beyond yes or no: abstain. It automates only confident, low-risk cases while leaving mixed, sensitive, or uncertain items unchanged for a person to review.",
+      "deep_dive": "Complete classification assumes every input deserves an action, but that fails when mistakes have unequal consequences. Start by comparing the harm of unnecessary review with the harm of an incorrect mutation. Protect categories where the second cost dominates and make uncertainty fail safe. Evaluate the full unit being changed, because a harmless message can share a thread with a sensitive reply. Keep execution reversible, attach reason codes, and record enough information to undo batches. Measure precision on automated actions, abstention rate, review burden, and costly escapes. A rising abstention rate can reveal changing inputs or weak instructions; a low rate is not automatically better. The aim is dependable workload reduction within a risk budget, not maximum autonomy.",
+      "diagram": {
+        "nodes": [
+          "Candidate item",
+          "Risk and confidence gate",
+          "Automate",
+          "Abstain for review"
+        ],
+        "type": "decision"
+      },
+      "example": "Consider a generic inbox assistant that moves obvious bulk promotions but leaves conversations mentioning payments, deadlines, security, or personal replies untouched. Ambiguous threads stay visible instead of receiving a forced label.",
+      "explanation": "Selective classification adds an abstain outcome to automated decisions. The agent handles confident, low-risk cases, while mixed, sensitive, or uncertain items remain unchanged for a person to review safely.",
+      "how": "Build the classifier around explicit exclusions, thread-level context, and confidence gates. Derive protected categories from canonical configuration where possible. Log decisions with reason codes, preserve reversibility, and measure both workload reduction and escaped high-risk errors. Ambiguity is a valid output, not a model failure.",
+      "how_it_works": "Define protected categories, examine the full unit being changed, and make uncertainty fail safe. Keep actions reversible, attach reason codes, and measure precision, abstention, review burden, and costly errors instead of automation volume alone.",
+      "in_practice": "A generic inbox agent can move obvious bulk promotions while leaving ambiguous conversations untouched. Its protected categories come from shared configuration, preventing a stale duplicate list from silently changing the safety boundary.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "The agent handles confident routine cases while ambiguous or costly decisions remain available for human review.",
+        "name": "Human-in-the-loop"
+      },
+      "slug": "selective-classification",
+      "summary": "A useful agent needs an explicit abstain path when uncertain classification could hide important work.",
+      "takeaway": "Automate obvious low-risk cases and route uncertainty to a reversible human review path.",
+      "title": "Let Agents Abstain on Risky Classification",
+      "what": "Selective classification lets an agent act only on high-confidence cases and abstain on ambiguous ones. Instead of forcing every item into an automated action, the policy defines protected categories and a safe default. Clear low-risk items move automatically; mixed, sensitive, or uncertain items remain untouched for review.",
+      "why": "This matters when false positives cost more than false negatives. Leaving one harmless item for a person creates minor friction. Hiding a payment, deadline, security warning, or human message can cause real damage. The decision threshold should reflect that asymmetry rather than chase maximum automation volume.",
+      "why_it_mattered": "False positives and false negatives carry different costs. One unnecessary review creates friction; hiding an urgent message can cause damage. The automation threshold should reflect that imbalance, not maximize activity.",
+      "why_it_matters": "Classification errors have unequal costs. Reviewing one harmless item creates minor friction, while hiding a deadline, payment, security warning, or personal message can cause real damage. The action threshold must reflect that asymmetry."
+    }
+  ],
+  "reading_time_minutes": 5,
+  "schema_version": 1
+}
