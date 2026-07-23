@@ -1,0 +1,61 @@
+{
+  "date": "2026-07-23",
+  "intro": "Two practical ideas for changing live systems and trusting automated operators.",
+  "lessons": [
+    {
+      "concept": "Parallel change",
+      "deep_dive": "Large migrations become dangerous when ownership, location, and runtime behavior change together. Parallel change deliberately overlaps old and new structures for a short period without allowing both to compete for the same responsibility. The temporary seam can be a service endpoint, package boundary, queue, or configuration interface. Each redirected dependency receives its own health check and rollback action. Once every satellite function works through the neutral seam, the final relocation carries far less hidden coupling. The overlap should have a removal condition and deadline, because permanent compatibility layers create confusion. This approach costs extra preparation, but it turns one opaque event into a sequence of observable transitions.",
+      "diagram": {
+        "nodes": [
+          "Create stable seam",
+          "Redirect dependency",
+          "Verify behavior",
+          "Move core service"
+        ],
+        "type": "sequence"
+      },
+      "example": "Imagine a booking platform whose notification worker lives inside the main application folder. Create a neutral worker package, point the existing scheduler at it, confirm deliveries, and only then move the application to another host.",
+      "explanation": "Parallel change breaks a risky migration into compatible, independently reversible steps. First introduce a new boundary while the old arrangement still works. Then redirect one dependency at a time and verify it before moving the central service.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "A compatible intermediate boundary lets producers and consumers move on different schedules.",
+        "name": "Parallel Change"
+      },
+      "slug": "parallel-change",
+      "summary": "Move supporting dependencies onto stable seams before relocating the system that currently owns them.",
+      "takeaway": "Decouple first, migrate second, and make every intermediate state safe to operate.",
+      "title": "Separate Dependencies Before Moving the Core",
+      "why_it_mattered": "This sequencing reduces the number of assumptions tested during the final switch. A failure identifies one recent change, while the untouched core remains a dependable rollback point."
+    },
+    {
+      "concept": "Evaluation-driven deployment",
+      "deep_dive": "An agent evaluation should resemble the conditions under which the capability will operate. A unit check can confirm that a tool accepts input, but it cannot prove that the agent selects the right target, verifies the result, avoids collateral effects, and recovers after environmental change. Build gates in layers: tool availability, controlled task completion, negative safety checks, and a clean restart trial. Record evidence from the environment rather than trusting the agent's narration. Promotion should be conditional on the entire suite, with failures stopping access expansion automatically. Keep test fixtures disposable and generic so repeated trials are safe. As the workflow changes, update the evaluation before widening permissions. The gate then becomes an executable definition of trustworthy behavior.",
+      "diagram": {
+        "nodes": [
+          "Tool checks",
+          "Task checks",
+          "Safety checks",
+          "Restart trial",
+          "Promotion"
+        ],
+        "type": "layers"
+      },
+      "example": "Suppose an agent controls a disposable spreadsheet. A useful gate checks discovery, editing, scrolling, cleanup, and a fresh run after restart, while also confirming that unrelated windows remain untouched.",
+      "explanation": "Evaluation-driven deployment defines observable acceptance checks before an agent gains broader access. Tests cover outcomes, boundaries, recovery, and persistence rather than merely confirming that a tool starts or returns success.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "Cheap component checks support fewer realistic end-to-end trials before capability promotion.",
+        "name": "Test Pyramid"
+      },
+      "slug": "evaluation-driven-agent-deployment",
+      "summary": "Trust an agent capability only after repeatable tests prove its behavior under realistic operating conditions.",
+      "takeaway": "Promote capabilities from isolated tests to real access only when measured behavior passes every gate.",
+      "title": "Promote Agents Through Behavioral Gates",
+      "why_it_mattered": "Agent failures often hide behind plausible responses and successful API calls. Behavioral gates expose whether the complete environment, permissions, state, and safety constraints actually work together."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
