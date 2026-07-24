@@ -1,0 +1,60 @@
+{
+  "date": "2026-07-24",
+  "intro": "Two ways to keep transitions safe: one writer at a time, and durable checkpoints for long-running agents.",
+  "lessons": [
+    {
+      "concept": "Single-writer principle",
+      "deep_dive": "A single-writer design separates availability from authority. Both environments may stay reachable for rollback, yet only one can create authoritative changes for a given state domain. Start by inventorying mutable domains rather than whole machines: queues, databases, generated files, credentials, and scheduler state may have different owners. Record the current writer and the planned successor for each domain. At cutover, stop or fence the current writer, capture the final delta, verify it at the destination, and only then enable the successor. If verification fails, the old writer can resume without requiring conflict resolution. This is safer than a blanket synchronization because timestamps alone cannot reveal which side contains the valid business event.",
+      "diagram": {
+        "nodes": [
+          "Old writer",
+          "Freeze",
+          "Final copy",
+          "New writer"
+        ],
+        "type": "sequence"
+      },
+      "example": "Imagine moving a booking service between clusters. The new cluster accepts reservations, while the old cluster serves read-only history. A broad final copy would be unsafe because it could replace newer bookings with stale records.",
+      "explanation": "The single-writer principle prevents two live systems from changing the same state independently. A migration may run old and new infrastructure together, but each mutable dataset still needs one declared writer.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "Each mutable state tree has one authoritative writer before, during, and after the handover.",
+        "name": "Single-writer principle"
+      },
+      "slug": "single-writer-principle",
+      "summary": "During a handover, assign each changing dataset to exactly one active owner.",
+      "takeaway": "Parallel infrastructure is safe only when write ownership remains singular and explicit.",
+      "title": "Give Every Mutable State One Active Writer",
+      "why_it_mattered": "Clear ownership turns a vague cutover into a set of controlled transfers. Operators can freeze one writer, copy its final state, verify the destination, and then move ownership without merging conflicting timelines."
+    },
+    {
+      "concept": "Durable execution checkpoints",
+      "deep_dive": "A useful checkpoint contains more than a status label. It identifies the operation, the completed step, the next permitted action, any expiration rule, and an idempotency key for the eventual side effect. The waiting process may live in a workflow engine, job queue, durable actor, or supervised session; the essential property is that its lifetime does not depend on the chat response. On resumption, the agent first verifies that the checkpoint still matches the external state. It then continues once, records the result, and closes the checkpoint. If the token expired or the state changed, the workflow fails clearly and creates a fresh attempt rather than pretending the previous one remains valid.",
+      "diagram": {
+        "nodes": [
+          "Start step",
+          "Save checkpoint",
+          "Wait",
+          "Resume"
+        ],
+        "type": "loop"
+      },
+      "example": "Suppose an agent starts a three-step authorization flow. It records the pending step and keeps the waiting process in a persistent job. When the user returns with approval, the agent reconnects to that exact job.",
+      "explanation": "A conversational turn is a poor container for a multi-step operation. Durable execution stores progress outside the transient agent process, so the next turn can resume from a known checkpoint instead of restarting blindly.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "Externalize progress and resume tokens so a workflow outlives any single agent turn.",
+        "name": "Durable execution"
+      },
+      "slug": "durable-execution-checkpoints",
+      "summary": "Long-running agent workflows need durable state that survives turns, retries, and process loss.",
+      "takeaway": "Persist the workflow state before asking a human or external system to continue.",
+      "title": "Checkpoint Agent Work Across Conversation Boundaries",
+      "why_it_mattered": "Without checkpoints, a valid response can arrive after its original process has vanished. Repeating the entire flow wastes attention and can create duplicate side effects. Durable state makes retries selective and observable."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
