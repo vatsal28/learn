@@ -1,0 +1,57 @@
+{
+  "date": "2026-07-26",
+  "lessons": [
+    {
+      "concept": "Progressive delivery",
+      "deep_dive": "Progressive delivery treats release scope as a controlled variable. Code may already be deployed, but access expands only when evidence from the current stage satisfies predefined checks. This separates technical availability from user exposure.\n\nA useful design defines cohorts, entry criteria, exit criteria, and rollback behavior before launch. The smallest cohort should exercise the real path. Automated checks catch mechanical failures, while human review can judge presentation or policy concerns that are difficult to encode. If a stage fails, expansion stops without requiring a broad rollback.\n\nAudience selection should be deterministic and observable. Record the configuration behind each delivery, expose stage-level metrics, and ensure retries do not place recipients into multiple cohorts. Feature flags, percentage rollouts, allowlists, and tenant gates are common mechanisms. The architectural insight is simple: make release scope explicit state, protected by evidence-based gates.",
+      "diagram": {
+        "nodes": [
+          "Internal test",
+          "Small cohort",
+          "Eligible audience"
+        ],
+        "type": "flow"
+      },
+      "example": "A notification service sends a new template to an internal test account. After delivery, links, and opt-out behavior pass checks, it opens to a small cohort and finally to all eligible recipients.",
+      "explanation": "Progressive delivery separates deployment from full release. A new capability first reaches a tiny, controlled audience, then expands through explicit stages. Each stage has success checks and a stop condition.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "Controlled audience stages reduce release risk for systems that create external side effects.",
+        "name": "Progressive delivery"
+      },
+      "slug": "progressive-delivery",
+      "summary": "Release risky behavior to widening audiences only after each smaller stage proves safe.",
+      "takeaway": "Make audience expansion a gated sequence, not a single launch switch.",
+      "title": "Progressive Delivery",
+      "why_it_mattered": "External side effects are difficult to undo. Staged exposure limits the blast radius while revealing configuration, rendering, delivery, and compliance problems before they affect everyone."
+    },
+    {
+      "concept": "Human approval gates",
+      "deep_dive": "Human approval gates control actions whose consequences exceed an agent's standing authority. They work when a system separates planning permission from execution permission. The agent can gather information, create a draft, and run checks under ordinary access, while the final side effect requires a separate capability.\n\nA good gate presents a concrete action summary: what will happen, which audience or resource is affected, what identity will be used, and whether the result can be reversed. Approval binds to those details. If a material parameter changes, the approval expires and the system asks again. This prevents a vague yes from becoming unlimited authority.\n\nImplementations can use signed action tokens, short-lived credentials, workflow states, or policy checks around high-impact tools. Logs should capture the proposed action, approving principal, bound parameters, and result. Place gates at meaningful consequence boundaries so people do not learn to approve prompts reflexively.",
+      "diagram": {
+        "nodes": [
+          "Prepared action",
+          "Scope approved?",
+          "Execute or stop"
+        ],
+        "type": "decision"
+      },
+      "example": "An assistant prepares a customer notice and verifies every link. It then requests approval naming the audience and channel. Only that approved send is unlocked; future sends remain blocked.",
+      "explanation": "An approval gate separates preparation from execution. The agent may research, draft, validate, and assemble inputs, but it cannot perform a consequential action until a person authorizes the exact scope.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "A person authorizes the exact consequential action after the agent completes safe preparation.",
+        "name": "Human-in-the-loop approval"
+      },
+      "slug": "human-approval-gates",
+      "summary": "Agents should pause before consequential actions until a person grants specific, scoped authority.",
+      "takeaway": "Model authorization as narrow, expiring capability rather than conversational confidence.",
+      "title": "Human Approval Gates for Agent Actions",
+      "why_it_mattered": "Agent competence does not imply permission. A technically correct action can still reach the wrong audience, use an unapproved identity, expose private data, or create an unwanted commitment."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
