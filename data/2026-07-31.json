@@ -1,0 +1,57 @@
+{
+  "date": "2026-07-31",
+  "lessons": [
+    {
+      "concept": "Fault isolation",
+      "deep_dive": "Begin by deciding which components can fail independently and what durable evidence each must leave. Imagine a report generator with drafting, checking, rendering, and delivery. A renderer that cannot locate a font package has learned nothing about the report’s accuracy. It should emit a rendering-specific failure while leaving the approved input untouched.\n\nPlace prerequisite checks beside the component that owns them. A renderer verifies binaries and locked packages; a delivery service verifies credentials and connectivity. Neither edits source material to compensate for its own problem.\n\nUseful error categories make the boundary operational. Distinguish invalid input, absent dependency, unsuccessful build, and rejected delivery. Each category maps to a narrow response: revise input, restore packages, rerun rendering, or pause sending. This reduces diagnosis time and makes retries safe because the system can restart at the failed boundary rather than replaying completed work.",
+      "diagram": {
+        "nodes": [
+          "Validated input",
+          "Isolated build stage",
+          "Verified output"
+        ],
+        "type": "flow"
+      },
+      "example": "A publishing flow once treated a missing build dependency as defective writing. The safer version keeps the approved draft, checks prerequisites near the renderer, restores locked packages, and identifies the broken stage.",
+      "explanation": "Fault isolation divides a workflow into stages with distinct responsibilities, durable handoffs, and precise error categories. Each stage preserves successful upstream output and reports its own failure.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "Stage boundaries contain infrastructure failures so valid upstream artifacts remain intact.",
+        "name": "Bulkhead pattern"
+      },
+      "slug": "fault-isolation",
+      "summary": "Separate failure domains so one broken stage does not misdiagnose or destroy valid work.",
+      "takeaway": "Preserve completed work and name the failing layer before attempting recovery.",
+      "title": "Fault isolation",
+      "why_it_mattered": "The diagnosis now points recovery toward infrastructure without discarding creative work. A later retry can resume from the saved handoff instead of repeating every successful step."
+    },
+    {
+      "concept": "Planner–executor–critic",
+      "deep_dive": "The planner turns an ambiguous request into scope, constraints, risks, and observable checks. The executor receives that bounded brief and produces artifacts. The critic examines those artifacts instead of accepting the executor’s narrative.\n\nThese roles need separate contexts, though they do not require different models. A strong handoff names permitted surfaces, forbidden actions, expected outputs, and verification commands. An agent editing a site, for example, may change templates and assets while deployment remains prohibited. Review can then inspect the changes, run a build, and compare the rendered result with the original brief.\n\nArtifact-based milestones also improve supervision during long runs. A saved model, passing test, generated sample, or scoped commit is stronger evidence than an “active” status. The extra coordination has a cost, so use this structure for risky, multi-step, or externally visible work. For small reversible tasks, a single agent with a concise checklist is often enough.",
+      "diagram": {
+        "nodes": [
+          "Planner",
+          "Executor",
+          "Critic"
+        ],
+        "type": "sequence"
+      },
+      "example": "For a complex setup, the plan first named allowed surfaces and checks. An implementation agent followed that brief, while a separate review inspected files, test output, and a generated artifact.",
+      "explanation": "This pattern assigns specification, implementation, and verification to distinct roles. A planner defines constraints, an executor performs bounded work, and a critic tests artifacts against acceptance criteria.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "One role produces a candidate result while another evaluates it against explicit acceptance criteria.",
+        "name": "Generator–critic pattern"
+      },
+      "slug": "planner-executor-critic",
+      "summary": "Split complex agent work into planning, execution, and independent review with explicit handoffs.",
+      "takeaway": "Make completion a reviewed claim supported by artifacts, not an executor’s self-assessment.",
+      "title": "Planner–executor–critic",
+      "why_it_mattered": "The executor could no longer make the final success judgment alone. Explicit handoffs exposed assumptions, and review converted completion from a confident statement into a testable claim."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
