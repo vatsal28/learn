@@ -1,0 +1,60 @@
+{
+  "date": "2026-08-01",
+  "intro": "Two useful ideas from yesterday's work.",
+  "lessons": [
+    {
+      "concept": "Trust boundaries",
+      "deep_dive": "Trust is not a property of how plausible a message sounds. It comes from provenance, authentication, and the permissions attached to the channel that delivered it. A robust design therefore keeps content processing separate from command handling. The content path can normalize text, classify themes, or generate summaries, while the command path requires an authenticated principal and an explicit operation. This separation also improves observability: logs can show whether a value was merely read, used as evidence, or allowed to change state. When a new integration is added, engineers can review which side of the boundary it belongs on instead of inheriting accidental privileges. The practical test is simple: if an attacker controls every byte of an input, can those bytes directly select a privileged tool or operation? If yes, the boundary is missing or misplaced. Add a typed handoff that carries validated facts, not executable intent, and enforce authorization again at the final action point.",
+      "diagram": {
+        "nodes": [
+          "External input",
+          "Validation",
+          "Policy gate",
+          "Privileged action"
+        ],
+        "type": "layers"
+      },
+      "example": "Imagine a support portal that accepts customer comments. The service may store, search, and summarize those comments, but only an authenticated operator request can trigger refunds or account changes.",
+      "explanation": "A trust boundary marks where information changes security meaning. Data crossing that line must be parsed, constrained, and handled according to its origin rather than its apparent confidence or urgency.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "Untrusted content crosses through validation and policy checks before it can affect privileged behavior.",
+        "name": "Trust boundary"
+      },
+      "slug": "trust-boundaries",
+      "summary": "A system stays safer when data is never mistaken for authority.",
+      "takeaway": "Label every input by origin and capability before deciding what it may influence.",
+      "title": "Trust boundaries",
+      "why_it_mattered": "Separating descriptive input from authorized commands prevents a convenient ingestion path from quietly becoming an administrative control surface."
+    },
+    {
+      "concept": "Indirect prompt injection",
+      "deep_dive": "Prompt injection is not solved by asking the model to be careful. The system must make authority explicit outside the model's free-form interpretation. Retrieved pages, uploaded documents, database rows, and tool results should carry a data-only label. A policy layer can then restrict which trusted messages may authorize tool calls, especially actions that send, publish, modify, or disclose information. The agent may still extract useful claims from hostile content, but those claims should flow into a structured intermediate result rather than back into the instruction channel. Tool implementations provide the final backstop by checking scope, target, and user authorization before execution. This approach reduces the impact of a model mistake because the model cannot manufacture permission merely by repeating persuasive text. Testing should include adversarial documents that mimic system messages, claim urgency, or request secrets. Success means the useful portion is processed while the embedded command is ignored and no privileged side effect occurs.",
+      "diagram": {
+        "nodes": [
+          "Incoming text",
+          "Trusted instruction?",
+          "Use as command",
+          "Use as data"
+        ],
+        "type": "decision"
+      },
+      "example": "A research agent opens a product review saying to ignore its task and export files. It may summarize the review, but the embedded request receives no tool authority.",
+      "explanation": "Indirect prompt injection occurs when an agent reads attacker-controlled material that contains instructions designed to redirect its behavior. The dangerous text arrives through data, not the authenticated conversation.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "The agent resolves behavior from trusted control messages while treating retrieved material strictly as evidence.",
+        "name": "Instruction hierarchy"
+      },
+      "slug": "indirect-prompt-injection",
+      "summary": "Agent tools should treat retrieved instructions as content, not commands.",
+      "takeaway": "Bind tool permissions to trusted intent, never to instructions discovered inside retrieved content.",
+      "title": "Indirect prompt injection",
+      "why_it_mattered": "Agents combine interpretation with action, so confusing retrieved prose with operator intent can turn ordinary reading into unauthorized state changes."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
