@@ -1,0 +1,60 @@
+{
+  "date": "2026-08-03",
+  "intro": "Two practical ideas for making automated work safer and easier to repeat.",
+  "lessons": [
+    {
+      "concept": "Idempotent job design",
+      "deep_dive": "Idempotency is about outcomes, not preventing execution. A scheduler may invoke the same task twice, and a worker may crash after changing state but before reporting success. The job therefore needs enough durable information to recognize what already happened. A date, event identifier, or content digest can serve as the operation key. Reads establish the current state; writes use uniqueness constraints, compare-and-swap, or atomic replacement to prevent partial results. Side effects need the same treatment: mark an outbound action with a durable key before accepting another attempt, or use a destination that supports deduplication. A no-op is a successful result when the desired state already exists. This design also improves observability because operators can distinguish completed, unchanged, partially applied, and failed runs. The best test is simple: interrupt the job after every meaningful step, run it again, and confirm the final state matches one uninterrupted execution.",
+      "diagram": {
+        "nodes": [
+          "Stable run key",
+          "Check current state",
+          "Apply missing change",
+          "Record completion"
+        ],
+        "type": "flow"
+      },
+      "example": "Imagine a nightly catalog builder keyed by date. It writes to a temporary location, compares the finished output with the current edition, and swaps files only when content differs.",
+      "explanation": "Scheduled work often retries after timeouts, restarts, or uncertain acknowledgements. Idempotent design makes repetition safe by deriving a stable operation key, checking existing state, and applying only the missing change.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "A recurring job can treat each dated run like a message whose stable key is processed at most once logically.",
+        "name": "Idempotent Consumer"
+      },
+      "slug": "idempotent-job-design",
+      "summary": "An idempotent job reaches the same correct state whether it runs once or several times.",
+      "takeaway": "Give recurring jobs stable identities, explicit preconditions, atomic writes, and a truthful no-op path.",
+      "title": "Make reruns boring with idempotent jobs",
+      "why_it_mattered": "Without this property, a harmless retry can duplicate records, erase an unfinished draft, or create conflicting releases. Safe repetition turns ambiguous failures into routine recovery."
+    },
+    {
+      "concept": "Preflight validation for agent actions",
+      "deep_dive": "A useful agent architecture separates proposal from authority. The model can interpret context, select an approach, and produce a candidate action. It should not also decide whether its own candidate satisfies every safety rule. A deterministic preflight layer can verify schemas, allowed targets, repository cleanliness, data classifications, and readiness conditions using code that is small enough to test. Failure should be loud and non-mutating: return precise defects, preserve the candidate, and withhold the capability that creates the side effect. Repairs then address only the reported issue before validation runs again. The gate must examine the final artifact, because approving an earlier plan does not prove the produced output is safe. For higher-risk operations, pair preflight checks with narrowly scoped tools and durable receipts. This creates a clear chain: propose, validate, authorize, execute, verify. The model remains flexible where judgment helps, while the boundary stays predictable where mistakes would escape the workspace.",
+      "diagram": {
+        "nodes": [
+          "Agent proposal",
+          "Fixed validator",
+          "Allow action",
+          "Reject safely"
+        ],
+        "type": "decision"
+      },
+      "example": "Suppose an assistant prepares a report for release. A fixed checker rejects private markers, unexpected links, malformed fields, and a dirty destination before the publishing tool becomes available.",
+      "explanation": "Agents are strongest when creative reasoning proposes work but deterministic code decides whether execution is allowed. A preflight gate checks scope, required inputs, destination state, and privacy constraints.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "The execution boundary evaluates a fixed policy after generation and before granting access to the side-effecting operation.",
+        "name": "Policy Enforcement Point"
+      },
+      "slug": "preflight-validation-agent-actions",
+      "summary": "A preflight gate checks an agent's intended action against fixed rules before any side effect occurs.",
+      "takeaway": "Let the model choose useful content; let deterministic gates control irreversible or external actions.",
+      "title": "Validate the runway before an agent acts",
+      "why_it_mattered": "Prompts can guide behavior, but they are not reliable enforcement. Moving critical rules into a mechanical boundary stops plausible-looking output from bypassing safety requirements."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
