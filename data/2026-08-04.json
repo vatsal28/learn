@@ -1,0 +1,60 @@
+{
+  "date": "2026-08-04",
+  "intro": "Two practical ways to keep automated systems useful without making them reckless.",
+  "lessons": [
+    {
+      "concept": "Graceful degradation",
+      "deep_dive": "The difficult part is deciding what may bend. Availability goals often tempt teams to relax the wrong constraint. Evidence quality, authorization, data integrity, and privacy should remain hard gates. Quantity, decorative sections, secondary enrichments, and timing precision are usually better candidates for reduced mode. Encode that distinction in configuration and tests rather than leaving it to an operator during an incident. Make the degraded state observable through status fields, metrics, and user-facing wording. Also define recovery: when inputs return, the next run should resume normal output without duplicating work or hiding the earlier shortfall. Finally, test reduced mode deliberately. A fallback that exists only on a diagram tends to fail when first needed. Feed the system incomplete but valid inputs, confirm it produces a smaller honest result, and verify that missing essentials still stop publication.",
+      "diagram": {
+        "nodes": [
+          "Check essentials",
+          "Keep safe core",
+          "Drop optional scope",
+          "Report reduced mode"
+        ],
+        "type": "decision"
+      },
+      "example": "Imagine a digest expecting twelve verified items. Only eight pass the evidence checks. It publishes eight strong items, records the shortfall, and skips optional sections instead of inventing filler or cancelling everything.",
+      "explanation": "Graceful degradation keeps a system operating at reduced quality when a nonessential condition fails. The design separates hard safety invariants from preferences such as ideal volume, freshness, or presentation richness.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "The service retains its trustworthy core while explicitly shedding optional quality targets.",
+        "name": "Graceful degradation"
+      },
+      "slug": "graceful-degradation",
+      "summary": "When ideal inputs are unavailable, preserve the useful core and clearly reduce scope.",
+      "takeaway": "Classify every requirement as essential, degradable, or cosmetic before failure occurs.",
+      "title": "Degrade the output, not the whole service",
+      "why_it_mattered": "A rigid all-or-nothing gate can turn a minor capacity gap into total unavailability. A carefully scoped fallback preserves value while keeping truth and safety requirements intact."
+    },
+    {
+      "concept": "Least privilege for agent credentials",
+      "deep_dive": "Prompt instructions are policy, not enforcement. If an agent holds a broadly authorized secret, a model error or compromised input can still reach everything that secret permits. Put the real boundary below the model. Prefer separate credentials per workload and environment, API allowlists, read-only roles, short expiration, quota limits, and network restrictions. Avoid sharing one convenient account across unrelated automations. Inventory which tool receives each secret and record why every permission exists. Then verify the live provider configuration; configuration files and task descriptions can drift from actual permissions. Rotation matters too, but replacing a broad key with another broad key only shortens exposure history. Restriction changes the possible impact. Monitor denied calls because they can reveal broken assumptions or attempted misuse. When a workflow needs a new capability, add it deliberately after review rather than granting a large bundle in advance.",
+      "diagram": {
+        "nodes": [
+          "Agent task",
+          "Scoped tool",
+          "Restricted credential",
+          "Single service"
+        ],
+        "type": "layers"
+      },
+      "example": "Suppose a research agent needs one public-data endpoint. Its key permits only that API and read operations. It cannot manage billing, alter infrastructure, access unrelated datasets, or call every service in the account.",
+      "explanation": "Least privilege limits an agent's credential to the smallest useful capability. A token should be restricted by service, action, environment, and duration wherever the platform supports those controls.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "Tool access is constrained at the credential layer instead of relying only on prompts.",
+        "name": "Principle of least privilege"
+      },
+      "slug": "least-privilege-agent-credentials",
+      "summary": "Credentials should authorize only the exact service and actions an agent needs.",
+      "takeaway": "Treat every broad credential as unresolved risk, even when current behavior looks harmless.",
+      "title": "Give an agent a narrow key, not a master key",
+      "why_it_mattered": "Agents can make mistakes, follow hostile instructions, or expose secrets through tooling. Narrow credentials reduce the blast radius before detection, monitoring, or human intervention has time to help."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
