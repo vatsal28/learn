@@ -1,0 +1,58 @@
+{
+  "date": "2026-08-05",
+  "lessons": [
+    {
+      "concept": "Bounded Context",
+      "deep_dive": "The important design choice is where authority lives. A shared service may schedule releases, but the owning domain still decides its audience and message. Interfaces should describe what crosses the boundary: an approved asset, a release event, a metric snapshot, or a review request. Avoid shared databases that let every domain mutate every record, because technical access quickly becomes accidental governance. Boundaries are contracts, not walls. Revisit them when responsibilities repeatedly cross the same seam, but do not redraw them for every temporary initiative. A healthy boundary lowers coordination cost, gives terms stable meanings, and lets local teams improve their systems without silently changing another domain's operating rules.",
+      "diagram": {
+        "nodes": [
+          "Domain-owned decisions",
+          "Explicit interfaces",
+          "Shared coordination"
+        ],
+        "type": "layers"
+      },
+      "example": "Imagine separate product, publishing, and experimentation domains. Each owns its roadmap and metrics, while a small coordination service handles dependencies, deadlines, and common procedures.",
+      "explanation": "A bounded context is a domain boundary where terms, models, responsibilities, and rules keep one consistent meaning. Each context owns its decisions and exposes deliberate interfaces to neighbouring domains.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "Separating domain ownership from shared coordination preserves local autonomy without losing portfolio-level visibility.",
+        "name": "Bounded Context"
+      },
+      "slug": "bounded-contexts",
+      "summary": "Boundaries work when each domain owns its language, decisions, data, and operating rules.",
+      "takeaway": "Centralize coordination where necessary, while leaving domain decisions inside their owning context.",
+      "title": "Bounded Contexts Keep Ownership Clear",
+      "why_it_mattered": "Without boundaries, every change becomes a negotiation. Authority overlaps, shared records conflict, and local improvements break distant workflows. Clear ownership keeps coordination explicit and failures easier to locate."
+    },
+    {
+      "concept": "Task-specific Agent Evaluation",
+      "deep_dive": "Give every case a fixture and an explicit contract. For a tool task, check both whether the correct tool was selected and whether the resulting state is right. For media, separate instruction adherence from aesthetic preference. Record latency, tokens, external cost, retries, and failures alongside quality. Run each candidate several times because agent behaviour varies; one success does not prove stability. Keep prompts, tool schemas, permissions, timeouts, and available context fixed. Version the suite whenever a contract changes, otherwise historical comparisons become misleading. Human review still matters for nuanced outputs, but reviewers need a short rubric and should not know which candidate produced each artifact when practical. The result is a decision instrument for selecting a configuration, estimating its cost, and finding where it breaks.",
+      "diagram": {
+        "nodes": [
+          "Representative task",
+          "Controlled run",
+          "Mechanical checks",
+          "Compare results"
+        ],
+        "type": "loop"
+      },
+      "example": "A compact suite can test one tool call, one longer workflow, one writing task, one media task, and one recovery scenario under identical permissions and limits.",
+      "explanation": "Task-specific evaluation replaces impressions with representative jobs. Every test defines an input, allowed tools, success criteria, and measurements such as correctness, latency, token use, retries, and artifact quality.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "A fixed harness makes model and provider changes comparable across the tasks an agent actually performs.",
+        "name": "Evaluation Harness"
+      },
+      "slug": "task-specific-agent-evaluations",
+      "summary": "Agent comparisons become useful when tests mirror recurring work and measure outcomes, cost, and reliability.",
+      "takeaway": "Choose an agent using reproducible task outcomes, not one impressive conversation.",
+      "title": "Evaluate Agents on Real Task Families",
+      "why_it_mattered": "A fluent model may still mishandle tools, files, images, or long workflows. Generic leaderboards miss local constraints, so changing a default by feel can conceal expensive regressions."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
