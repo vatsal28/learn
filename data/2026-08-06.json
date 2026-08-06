@@ -1,0 +1,58 @@
+{
+  "date": "2026-08-06",
+  "lessons": [
+    {
+      "concept": "Separation of concerns",
+      "deep_dive": "A useful boundary is more than a folder name. It states what may change, what must remain invariant, and how neighboring parts communicate. Before revising a layer, capture its inputs and outputs as a small contract. Tests can then compare those contracts instead of treating the whole product as one opaque artifact. This also improves recovery: if a new presentation fails, the team can discard it without rebuilding trusted data or editorial work. The tradeoff is coordination overhead. Too many tiny layers create ceremony and slow ordinary changes. Split responsibilities where failures have different consequences, where different specialists work independently, or where one area changes much faster than another. Good separation turns a complete rebuild into a bounded substitution.",
+      "diagram": {
+        "nodes": [
+          "Stable data",
+          "Approved content",
+          "Replaceable view"
+        ],
+        "type": "layers"
+      },
+      "example": "Imagine a document service with distinct storage, formatting, and presentation layers. A designer can revise presentation motion while storage rules and approved wording remain fixed.",
+      "explanation": "Separation of concerns divides a system by responsibility. Each layer owns a narrow job and exposes a deliberate interface, so changes remain local and understandable.",
+      "lane": "system-design",
+      "pattern": {
+        "applicable": true,
+        "connection": "The system isolates storage, content, and presentation so each can evolve behind a stable contract.",
+        "name": "Separation of Concerns"
+      },
+      "slug": "separation-of-concerns",
+      "summary": "Independent layers let one part improve without destabilizing everything already proven correct.",
+      "takeaway": "Identify the stable layers first, freeze their contracts, and replace only the layer that actually needs improvement.",
+      "title": "Separate Layers Make Rework Safer",
+      "why_it_mattered": "When responsibilities blur, a visual adjustment can unexpectedly alter data, validation, or content. Clear boundaries reduce regression risk and make review more focused."
+    },
+    {
+      "concept": "Model provenance verification",
+      "deep_dive": "Model selection often passes through several control points: an agent profile, an orchestration service, a provider alias, and an availability fallback. A label at the first point cannot prove what executed at the last. Capture the resolved provider, model identifier, and relevant version at execution time, then compare them with the task policy before any irreversible step. For low-risk drafting, a mismatch may merely require a warning. For regulated review, evaluation, or model-comparison experiments, it should fail closed. Store the attestation beside the artifact so later reviewers can distinguish output quality from routing behavior. This practice also makes incidents easier to diagnose because configuration errors, provider substitutions, and worker failures no longer collapse into one vague status.",
+      "diagram": {
+        "nodes": [
+          "Requested model",
+          "Resolved identity",
+          "Policy match",
+          "Run or stop"
+        ],
+        "type": "decision"
+      },
+      "example": "Suppose a review requires a particular evaluator. The worker records its resolved identity, compares it with policy, and stops before mutation when they differ.",
+      "explanation": "Agent platforms may route requests through aliases, fallbacks, or provider policies. Provenance verification checks the resolved model before accepting model-specific work.",
+      "lane": "agents-ai",
+      "pattern": {
+        "applicable": true,
+        "connection": "The executor presents runtime identity evidence that a policy gate verifies before allowing consequential work.",
+        "name": "Runtime Attestation"
+      },
+      "slug": "model-provenance-verification",
+      "summary": "Requested model names are intentions; runtime evidence establishes which model produced the work.",
+      "takeaway": "Treat model identity as a checked runtime property, not a promise inferred from the request configuration.",
+      "title": "Verify the Model That Actually Ran",
+      "why_it_mattered": "Without verification, a successful artifact can be attributed to the wrong model. That breaks auditability and hides whether a required capability was truly used."
+    }
+  ],
+  "reading_time_minutes": 3,
+  "schema_version": 1
+}
